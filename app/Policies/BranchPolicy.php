@@ -1,0 +1,35 @@
+<?php
+
+namespace App\Policies;
+
+use App\Models\Branch;
+use App\Models\User;
+
+class BranchPolicy
+{
+    public function viewAny(User $user): bool
+    {
+        return $user->isAdmin() || $user->isHr() || $user->isManager();
+    }
+
+    public function view(User $user, Branch $branch): bool
+    {
+        return $user->isAdmin()
+            || ($user->isManager() ? $user->branch_id === $branch->id : $user->company_id === $branch->company_id);
+    }
+
+    public function create(User $user): bool
+    {
+        return $user->isAdmin();
+    }
+
+    public function update(User $user, Branch $branch): bool
+    {
+        return $user->isAdmin() && $this->view($user, $branch);
+    }
+
+    public function delete(User $user, Branch $branch): bool
+    {
+        return $this->update($user, $branch);
+    }
+}
